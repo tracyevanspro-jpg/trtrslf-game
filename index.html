@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TRTRSLF — Translate the Self</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      background: #f7f1e6;
+      color: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .frame {
+      border: 1px solid #cfc6b8;
+      padding: 60px 80px;
+      text-align: center;
+      max-width: 700px;
+    }
+    h1 {
+      letter-spacing: 0.4em;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-style: italic;
+      font-weight: normal;
+      margin-top: 0;
+    }
+    #cipher {
+      margin: 40px 0;
+      font-size: 2em;
+      letter-spacing: 0.2em;
+    }
+    .hint {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <h1>TRTRSLF</h1>
+    <h2>Translate the Self</h2>
+
+    <div id="cipher">Loading…</div>
+
+    <div class="hint">
+      A small game about consonants, context, and interpretation.
+    </div>
+  </div>
+
+  <script>
+    fetch("https://trtrslf-api.vercel.app/api/puzzle")
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById("cipher").textContent = data.noVowels;
+      })
+      .catch(() => {
+        document.getElementById("cipher").textContent = "Error loading puzzle";
+      });
+  </script>
+</body>
+</html>
