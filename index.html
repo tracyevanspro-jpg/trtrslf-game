@@ -77,59 +77,76 @@ select{font-size:16px; padding:6px}
   <div class="version">v2.02</div>
 </div>
 
+
+
+
+
+
 <script>
-let puzzle = null;
+let currentPuzzle = null;
 let revealed = false;
 
-const cipherEl = document.getElementById("cipher");
-const clueEl = document.getElementById("clue");
-const feedbackEl = document.getElementById("feedback");
-const answerEl = document.getElementById("answer");
-
-function loadPuzzle(){
+function loadPuzzle() {
   fetch("https://trtrslf-api.vercel.app/api/puzzle")
-    .then(r=>r.json())
-    .then(data=>{
-      puzzle = data;
-      revealed = false;
-      cipherEl.textContent = data.noVowels;
-      clueEl.textContent = data.meta?.clue || "";
-      feedbackEl.textContent = "";
-      answerEl.value = "";
+    .then(r => {
+      if (!r.ok) throw new Error("Bad response");
+      return r.json();
     })
-    .catch(()=>{
-      cipherEl.textContent = "Error loading puzzle";
+    .then(data => {
+      currentPuzzle = data;
+      revealed = false;
+
+      cipher.textContent = data.noVowels;
+      clue.textContent = data.meta?.clue || "";
+      ref.textContent = data.meta?.source || "";
+      feedback.textContent = "";
+      feedback.className = "";
+      answer.value = "";
+    })
+    .catch(err => {
+      cipher.textContent = "Error loading puzzle";
+      console.error(err);
     });
 }
 
-document.getElementById("submit").onclick = ()=>{
-  if(!puzzle) return;
-  const guess = answerEl.value.trim().toUpperCase();
-  if(guess === puzzle.phrase){
-    feedbackEl.textContent = puzzle.meta?.learn || "Correct.";
+submitBtn.onclick = () => {
+  if (!currentPuzzle) return;
+
+  const guess = answer.value.trim().toUpperCase();
+  if (guess === currentPuzzle.phrase) {
+    feedback.textContent = currentPuzzle.meta?.learn || "Correct.";
+    feedback.className = "show ok";
   } else {
-    feedbackEl.textContent = puzzle.meta?.nudge || "Try again.";
+    feedback.textContent = currentPuzzle.meta?.nudge || "Try again.";
+    feedback.className = "show warn";
   }
 };
 
-document.getElementById("spaces").onclick = ()=>{
-  if(puzzle) cipherEl.textContent = puzzle.noSpaces;
+spacesBtn.onclick = () => {
+  if (!currentPuzzle) return;
+  cipher.textContent = currentPuzzle.noSpaces.replace(/([A-Z])/g, "$1 ");
 };
 
-document.getElementById("vowels").onclick = ()=>{
-  if(puzzle) cipherEl.textContent = puzzle.phrase.replace(/[^AEIOU ]/gi,"_");
+vowelsBtn.onclick = () => {
+  if (!currentPuzzle) return;
+  cipher.textContent = currentPuzzle.phrase;
 };
 
-document.getElementById("reveal").onclick = ()=>{
-  if(puzzle){
-    cipherEl.textContent = puzzle.phrase;
-    feedbackEl.textContent = puzzle.meta?.learn || "";
-  }
+revealBtn.onclick = () => {
+  if (!currentPuzzle) return;
+  cipher.textContent = currentPuzzle.phrase;
 };
 
-document.getElementById("next").onclick = loadPuzzle;
+newBtn.onclick = loadPuzzle;
+nextBtn?.onclick = loadPuzzle;
 
 loadPuzzle();
 </script>
+
+
+
+
+
+  
 </body>
 </html>
