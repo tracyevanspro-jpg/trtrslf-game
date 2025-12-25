@@ -1,131 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>TRTRSLF — Translate the Self</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRTRSLF — Translate the Self</title>
 
-  <style>
-    body {
-      background: #f6f1e7;
-      font-family: "Georgia", serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+<style>
+  body {
+    margin: 0;
+    background: #f6f1e7;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #222;
+  }
 
-    .frame {
-      border: 2px solid #d6cdbb;
-      padding: 60px 80px;
-      text-align: center;
-      max-width: 700px;
-      width: 100%;
-    }
+  .frame {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 60px 40px;
+    border: 1px solid #c9c1b3;
+    text-align: center;
+  }
 
-    h1 {
-      letter-spacing: 0.35em;
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
+  h1 {
+    letter-spacing: 0.35em;
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
 
-    h2 {
-      font-style: italic;
-      font-weight: normal;
-      margin-top: 0;
-      color: #444;
-    }
+  h2 {
+    font-style: italic;
+    font-weight: normal;
+    margin-top: 0;
+    color: #555;
+  }
 
-    #cipher {
-      margin: 40px 0;
-      font-size: 28px;
-      letter-spacing: 0.25em;
-    }
+  .cipher {
+    font-size: 36px;
+    letter-spacing: 0.2em;
+    margin: 60px 0 30px;
+  }
 
-    .controls {
-      margin-top: 30px;
-    }
+  .controls {
+    margin-top: 40px;
+  }
 
-    button {
-      background: transparent;
-      border: 1px solid #444;
-      padding: 10px 22px;
-      margin: 0 10px;
-      font-family: inherit;
-      font-size: 16px;
-      cursor: pointer;
-    }
+  button {
+    background: none;
+    border: 1px solid #999;
+    padding: 10px 20px;
+    margin: 0 8px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
 
-    button:hover {
-      background: #e9e2d3;
-    }
+  button:hover {
+    background: #e8e2d6;
+  }
 
-    .meta {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #666;
-      font-style: italic;
-    }
-  </style>
+  .meta {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #666;
+  }
+</style>
 </head>
 
 <body>
-  <div class="frame">
-    <h1>TRTRSLF</h1>
-    <h2>Translate the Self</h2>
+<div class="frame">
+  <h1>TRTRSLF</h1>
+  <h2>Translate the Self</h2>
 
-    <div id="cipher">Loading…</div>
+  <div id="cipher" class="cipher">Loading…</div>
 
-    <div class="controls">
-      <button id="reveal">Reveal</button>
-      <button id="next">Next</button>
-    </div>
-
-    <div class="meta">
-      A small game about consonants, context, and interpretation.
-    </div>
+  <div class="controls">
+    <button onclick="reveal()">Reveal</button>
+    <button onclick="nextPuzzle()">Next</button>
   </div>
 
-  <script>
-    let currentPuzzle = null;
-    let revealed = false;
+  <div id="meta" class="meta"></div>
+</div>
 
-    function loadPuzzle() {
-      revealed = false;
-      document.getElementById("cipher").textContent = "Loading…";
+<script>
+let current = null;
+let revealed = false;
 
-      fetch("https://trtrslf-api.vercel.app/api/puzzle")
-        .then(r => r.json())
-        .then(data => {
-          currentPuzzle = data;
-          document.getElementById("cipher").textContent = data.noVowels;
-        })
-        .catch(() => {
-          document.getElementById("cipher").textContent =
-            "Error loading puzzle";
-        });
-    }
+async function loadPuzzle() {
+  revealed = false;
+  document.getElementById("cipher").textContent = "Loading…";
+  document.getElementById("meta").textContent = "";
 
-    document.getElementById("reveal").onclick = () => {
-      if (!currentPuzzle) return;
+  try {
+    const res = await fetch("https://trtrslf-api.vercel.app/api/puzzle");
+    const data = await res.json();
+    current = data;
+    document.getElementById("cipher").textContent = data.noVowels;
+  } catch {
+    document.getElementById("cipher").textContent = "Error loading puzzle";
+  }
+}
 
-      if (!revealed) {
-        document.getElementById("cipher").textContent =
-          currentPuzzle.phrase;
-        revealed = true;
-      } else {
-        document.getElementById("cipher").textContent =
-          currentPuzzle.noVowels;
-        revealed = false;
-      }
-    };
+function reveal() {
+  if (!current || revealed) return;
+  revealed = true;
+  document.getElementById("cipher").textContent = current.phrase;
+  document.getElementById("meta").textContent = current.meta?.source || "";
+}
 
-    document.getElementById("next").onclick = () => {
-      loadPuzzle();
-    };
+function nextPuzzle() {
+  loadPuzzle();
+}
 
-    // initial load
-    loadPuzzle();
-  </script>
+loadPuzzle();
+</script>
 </body>
 </html>
