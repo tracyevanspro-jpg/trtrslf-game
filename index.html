@@ -270,16 +270,34 @@ button:hover {
       
       
 <script>
-fetch("https://trtrslf-api.vercel.app/api/puzzle")
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById("cipher").textContent = data.noVowels;
-  })
-  .catch(() => {
-    document.getElementById("cipher").textContent = "Error loading puzzle";
-  });
-</script>
+let currentPuzzle = null;
 
+function loadPuzzle(category = "all") {
+  fetch("https://trtrslf-api.vercel.app/api/puzzle")
+    .then(r => r.json())
+    .then(data => {
+      currentPuzzle = data;
+      document.getElementById("cipher").textContent = data.noVowels;
+    })
+    .catch(() => {
+      document.getElementById("cipher").textContent = "Error loading puzzle";
+    });
+}
+
+// load immediately
+loadPuzzle();
+
+// Next button
+document.getElementById("nextBtn").onclick = () => {
+  loadPuzzle();
+};
+
+// Reveal button
+document.getElementById("submitBtn").onclick = () => {
+  if (!currentPuzzle) return;
+  document.getElementById("cipher").textContent = currentPuzzle.phrase;
+};
+</script>
 
 
 
