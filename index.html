@@ -36,13 +36,34 @@ h2 {
 }
 
 #cipher {
-  margin: 40px 0;
+  margin: 40px 0 10px;
   font-size: 26px;
   letter-spacing: 0.3em;
 }
 
-.controls button {
-  margin: 8px;
+input {
+  width: 60%;
+  padding: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  border: none;
+  border-bottom: 2px solid #aaa;
+  background: transparent;
+  text-align: center;
+}
+
+select {
+  margin-top: 20px;
+  font-family: inherit;
+  padding: 6px;
+}
+
+.controls {
+  margin-top: 30px;
+}
+
+button {
+  margin: 6px;
   padding: 8px 16px;
   background: none;
   border: 1px solid #888;
@@ -50,13 +71,19 @@ h2 {
   font-family: inherit;
 }
 
-.controls button:hover {
+button:hover {
   background: #e8e2d6;
 }
 
-#meta {
-  margin-top: 20px;
+#feedback {
+  margin-top: 16px;
   font-size: 14px;
+  color: #444;
+}
+
+.footer {
+  margin-top: 30px;
+  font-style: italic;
   color: #666;
 }
 </style>
@@ -68,75 +95,86 @@ h2 {
   <h1>TRTRSLF</h1>
   <h2>Translate the Self</h2>
 
-  <div class="controls">
-    <button onclick="setCategory('biblical')">Biblical</button>
-    <button onclick="setCategory('movies')">Movies</button>
-    <button onclick="setCategory('songs')">Songs</button>
-    <button onclick="setCategory('pop')">Pop</button>
-  </div>
+  <!-- CATEGORY DROPDOWN -->
+  <select id="category" onchange="loadPuzzle()">
+    <option value="">All categories</option>
+    <option value="biblical">Biblical</option>
+    <option value="movies">Movies</option>
+    <option value="songs">Songs</option>
+    <option value="pop">Pop Culture</option>
+  </select>
 
-  <div id="cipher">Loading…</div>
+  <div id="cipher">—</div>
+
+  <input
+    id="answer"
+    placeholder="Type your translation…"
+    autocomplete="off"
+  />
 
   <div class="controls">
-    <button onclick="reveal()">Reveal</button>
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="showSpaces()">HINT — Show Spaces</button>
+    <button onclick="showVowels()">HINT — Show Vowels</button>
     <button onclick="nextPuzzle()">Next</button>
   </div>
 
-  <div class="controls">
-    <button onclick="showSpaces()">Show Spaces</button>
-    <button onclick="showVowels()">Show Vowels</button>
-  </div>
+  <div id="feedback"></div>
 
-  <div id="meta"></div>
+  <div class="footer">
+    A small game about consonants, context, and interpretation.
+  </div>
 </div>
 
 <script>
-let currentPuzzle = null;
-let revealed = false;
-let category = "biblical";
+let puzzle = null;
 
-function setCategory(cat) {
-  category = cat;
-  nextPuzzle();
-}
+function loadPuzzle() {
+  const category = document.getElementById("category").value;
+  const url = category
+    ? `https://trtrslf-api.vercel.app/api/puzzle?category=${category}`
+    : `https://trtrslf-api.vercel.app/api/puzzle`;
 
-function fetchPuzzle() {
-  fetch(`https://trtrslf-api.vercel.app/api/puzzle?category=${category}`)
+  fetch(url)
     .then(r => r.json())
     .then(data => {
-      currentPuzzle = data;
-      revealed = false;
+      puzzle = data;
       document.getElementById("cipher").textContent = data.noVowels;
-      document.getElementById("meta").textContent = "";
+      document.getElementById("answer").value = "";
+      document.getElementById("feedback").textContent = "";
     })
     .catch(() => {
       document.getElementById("cipher").textContent = "Error loading puzzle";
     });
 }
 
-function reveal() {
-  if (!currentPuzzle || revealed) return;
-  document.getElementById("cipher").textContent = currentPuzzle.phrase;
-  document.getElementById("meta").textContent =
-    `${currentPuzzle.source} — ${currentPuzzle.category}`;
-  revealed = true;
-}
+function checkAnswer() {
+  const guess = document.getElementById("answer").value.trim().toLowerCase();
+  const solution = puzzle.phrase.toLowerCase();
 
-function nextPuzzle() {
-  fetchPuzzle();
+  document.getElementById("feedback").textContent =
+    guess === solution
+      ? "✔ Correct."
+      : "✖ Not quite.";
 }
 
 function showSpaces() {
-  if (!currentPuzzle) return;
-  document.getElementById("cipher").textContent = currentPuzzle.noSpaces;
+  document.getElementById("cipher").textContent = puzzle.noSpaces;
 }
 
 function showVowels() {
-  if (!currentPuzzle) return;
-  document.getElementById("cipher").textContent = currentPuzzle.withVowels;
+  document.getElementById("cipher").textContent = puzzle.phrase;
 }
 
-fetchPuzzle();
+function nextPuzzle() {
+  loadPuzzle();
+}
+
+document.getElementById("answer").addEventListener("keydown", e => {
+  if (e.key === "Enter") checkAnswer();
+});
+
+loadPuzzle();
 </script>
 
 </body>
