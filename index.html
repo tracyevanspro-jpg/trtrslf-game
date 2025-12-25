@@ -2,206 +2,142 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>TRTRSLF — Translate the Self</title>
 
 <style>
-  body {
-    margin: 0;
-    background: #f4efe6;
-    font-family: Georgia, "Times New Roman", serif;
-    color: #222;
-  }
+body {
+  background: #f6f1e7;
+  font-family: Georgia, serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
 
-  .frame {
-    max-width: 900px;
-    margin: 50px auto;
-    padding: 60px 40px;
-    border: 1px solid #c9c1b3;
-    text-align: center;
-  }
+.frame {
+  border: 1px solid #c9c2b8;
+  padding: 60px 80px;
+  text-align: center;
+  width: 70%;
+}
 
-  h1 {
-    letter-spacing: 0.35em;
-    font-size: 32px;
-    margin-bottom: 6px;
-  }
+h1 {
+  letter-spacing: 0.4em;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
 
-  h2 {
-    font-style: italic;
-    font-weight: normal;
-    margin-top: 0;
-    color: #555;
-  }
+h2 {
+  font-style: italic;
+  font-weight: normal;
+  color: #555;
+  margin-top: 0;
+}
 
-  .categories {
-    margin: 30px 0 20px;
-  }
+#cipher {
+  margin: 40px 0;
+  font-size: 26px;
+  letter-spacing: 0.3em;
+}
 
-  .categories button {
-    font-size: 13px;
-  }
+.controls button {
+  margin: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #888;
+  cursor: pointer;
+  font-family: inherit;
+}
 
-  .cipher {
-    font-size: 34px;
-    letter-spacing: 0.22em;
-    margin: 50px 0 20px;
-    min-height: 1.5em;
-  }
+.controls button:hover {
+  background: #e8e2d6;
+}
 
-  .controls {
-    margin-top: 20px;
-  }
-
-  button {
-    background: none;
-    border: 1px solid #888;
-    padding: 8px 18px;
-    margin: 6px;
-    font-family: inherit;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  button.active {
-    background: #e3dacb;
-  }
-
-  button:hover {
-    background: #e9e2d6;
-  }
-
-  .feedback {
-    margin-top: 25px;
-    font-style: italic;
-    color: #666;
-    min-height: 1.2em;
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
-
-  .feedback.show {
-    opacity: 1;
-  }
-
-  .meta {
-    margin-top: 35px;
-    font-size: 13px;
-    color: #666;
-  }
+#meta {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
 </style>
 </head>
 
 <body>
+
 <div class="frame">
   <h1>TRTRSLF</h1>
   <h2>Translate the Self</h2>
 
-  <div class="categories">
-    <button onclick="setCategory('biblical')" class="active">Biblical</button>
+  <div class="controls">
+    <button onclick="setCategory('biblical')">Biblical</button>
     <button onclick="setCategory('movies')">Movies</button>
-    <button onclick="setCategory('songs')">Song Lyrics</button>
-    <button onclick="setCategory('pop')">Pop Culture</button>
+    <button onclick="setCategory('songs')">Songs</button>
+    <button onclick="setCategory('pop')">Pop</button>
   </div>
 
-  <div id="cipher" class="cipher">Loading…</div>
+  <div id="cipher">Loading…</div>
 
   <div class="controls">
-    <button id="spaceBtn" onclick="toggleSpaces()">HINT – Show Spaces</button>
-    <button id="vowelBtn" onclick="toggleVowels()">HINT – Show Vowels</button>
     <button onclick="reveal()">Reveal</button>
     <button onclick="nextPuzzle()">Next</button>
   </div>
 
-  <div id="feedback" class="feedback"></div>
+  <div class="controls">
+    <button onclick="showSpaces()">Show Spaces</button>
+    <button onclick="showVowels()">Show Vowels</button>
+  </div>
 
-  <div id="meta" class="meta"></div>
+  <div id="meta"></div>
 </div>
 
 <script>
-let puzzle = null;
+let currentPuzzle = null;
+let revealed = false;
 let category = "biblical";
-let showSpaces = false;
-let showVowels = false;
 
 function setCategory(cat) {
   category = cat;
-  document.querySelectorAll(".categories button")
-    .forEach(b => b.classList.remove("active"));
-  event.target.classList.add("active");
   nextPuzzle();
 }
 
-async function loadPuzzle() {
-  resetHints();
-  try {
-    const res = await fetch("https://trtrslf-api.vercel.app/api/puzzle");
-    puzzle = await res.json();
-    render();
-    fadeFeedback("");
-  } catch {
-    document.getElementById("cipher").textContent = "Error loading puzzle";
-  }
-}
-
-function render() {
-  if (!puzzle) return;
-
-  if (showSpaces && showVowels) {
-    document.getElementById("cipher").textContent = puzzle.phrase.toUpperCase();
-  } else if (showSpaces) {
-    document.getElementById("cipher").textContent = puzzle.noVowels;
-  } else if (showVowels) {
-    document.getElementById("cipher").textContent =
-      puzzle.phrase.replace(/\s/g, "").toUpperCase();
-  } else {
-    document.getElementById("cipher").textContent =
-      puzzle.noVowels.replace(/\s/g, "");
-  }
-}
-
-function toggleSpaces() {
-  showSpaces = !showSpaces;
-  document.getElementById("spaceBtn").classList.toggle("active");
-  render();
-}
-
-function toggleVowels() {
-  showVowels = !showVowels;
-  document.getElementById("vowelBtn").classList.toggle("active");
-  render();
+function fetchPuzzle() {
+  fetch(`https://trtrslf-api.vercel.app/api/puzzle?category=${category}`)
+    .then(r => r.json())
+    .then(data => {
+      currentPuzzle = data;
+      revealed = false;
+      document.getElementById("cipher").textContent = data.noVowels;
+      document.getElementById("meta").textContent = "";
+    })
+    .catch(() => {
+      document.getElementById("cipher").textContent = "Error loading puzzle";
+    });
 }
 
 function reveal() {
-  if (!puzzle) return;
-  document.getElementById("cipher").textContent = puzzle.phrase;
+  if (!currentPuzzle || revealed) return;
+  document.getElementById("cipher").textContent = currentPuzzle.phrase;
   document.getElementById("meta").textContent =
-    puzzle.meta?.source || "";
-  fadeFeedback("Interpretation achieved.");
+    `${currentPuzzle.source} — ${currentPuzzle.category}`;
+  revealed = true;
 }
 
 function nextPuzzle() {
-  document.getElementById("meta").textContent = "";
-  loadPuzzle();
+  fetchPuzzle();
 }
 
-function resetHints() {
-  showSpaces = false;
-  showVowels = false;
-  document.getElementById("spaceBtn").classList.remove("active");
-  document.getElementById("vowelBtn").classList.remove("active");
+function showSpaces() {
+  if (!currentPuzzle) return;
+  document.getElementById("cipher").textContent = currentPuzzle.noSpaces;
 }
 
-function fadeFeedback(text) {
-  const el = document.getElementById("feedback");
-  el.classList.remove("show");
-  setTimeout(() => {
-    el.textContent = text;
-    if (text) el.classList.add("show");
-  }, 200);
+function showVowels() {
+  if (!currentPuzzle) return;
+  document.getElementById("cipher").textContent = currentPuzzle.withVowels;
 }
 
-loadPuzzle();
+fetchPuzzle();
 </script>
+
 </body>
 </html>
