@@ -53,15 +53,18 @@
     </div>
   </div>
 
-  <script>
-    fetch("https://trtrslf-api.vercel.app/api/puzzle")
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById("cipher").textContent = data.noVowels;
-      })
-      .catch(() => {
-        document.getElementById("cipher").textContent = "Error loading puzzle";
-      });
-  </script>
+ <script>
+fetch("https://trtrslf-api.vercel.app/api/puzzle", {
+  method: "GET",
+  mode: "cors"
+})
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("cipher").textContent = data.noVowels;
+  })
+  .catch(() => {
+    document.getElementById("cipher").textContent = "Error loading puzzle";
+  });
+</script>
 </body>
 </html>
