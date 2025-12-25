@@ -265,26 +265,25 @@ button:hover {
   </div>
 </div>
 
+
+
+      
+      
 <script>
-function loadPuzzle() {
-  const category = document.getElementById("category").value;
-
-  fetch(`https://trtrslf-api.vercel.app/api/puzzle?category=${category}`)
-    .then(r => r.json())
-    .then(data => {
-      currentPuzzle = data;
-      revealed = false;
-
-      document.getElementById("cipher").textContent = data.noVowels;
-      document.getElementById("answer").value = "";
-      document.getElementById("result").textContent = "";
-    })
-    .catch(() => {
-      document.getElementById("cipher").textContent = "Error loading puzzle";
-    });
-}
+fetch("https://trtrslf-api.vercel.app/api/puzzle")
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("cipher").textContent = data.noVowels;
+  })
+  .catch(() => {
+    document.getElementById("cipher").textContent = "Error loading puzzle";
+  });
 </script>
 
 
+
+
+
+  
 </body>
 </html>
