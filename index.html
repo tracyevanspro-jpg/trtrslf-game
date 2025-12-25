@@ -1,390 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TRTRSLF</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TRTRSLF</title>
 
-  <style>
-    :root{
-      --paper:#fbf6ec;
-      --paper2:#fffaf0;
-      --ink:#2b2b2b;
-      --ink2:#6b6458;
-      --rule:#b9b09c;
-      --btn:#efe6d3;
-      --btn2:#d6ccb7;
-      --border:#d8cdb8;
-      --ok:#2f5f3a;
-      --warn:#7a5320;
-      --bad:#7a2a2a;
-    }
-
-    *{ box-sizing:border-box; }
-
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:24px;
-      background:
-        radial-gradient(900px 600px at 20% 10%, rgba(255,255,255,.65), transparent 60%),
-        radial-gradient(700px 520px at 80% 20%, rgba(255,255,255,.55), transparent 55%),
-        linear-gradient(180deg, #f8f4ee 0%, #efe6d6 100%);
-      color: var(--ink);
-      font-family: Georgia, "Times New Roman", serif;
-    }
-
-    #game{
-      width:min(860px, 100%);
-      text-align:center;
-      padding:56px 44px 40px;
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
-      box-shadow: 0 18px 50px rgba(40,30,20,.18);
-      position:relative;
-      overflow:hidden;
-    }
-
-    #game::before{
-      content:"";
-      position:absolute; inset:-40px;
-      background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
-      mix-blend-mode:multiply;
-      opacity:.30;
-      pointer-events:none;
-    }
-
-    .stack{ position:relative; display:flex; flex-direction:column; align-items:center; gap:10px; }
-
-    h1{
-      letter-spacing:0.35em;
-      font-size:clamp(34px, 5vw, 46px);
-      margin:0 0 4px;
-      font-weight:700;
-    }
-
-    .subtitle{
-      font-style:italic;
-      color:var(--ink2);
-      font-size:clamp(18px, 2.4vw, 24px);
-      margin:0 0 18px;
-    }
-
-    .toprow{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
-      margin: 6px 0 10px;
-    }
-
-    select{
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 18px;
-      padding: 8px 10px;
-      border:1px solid var(--rule);
-      background: rgba(255,255,255,.5);
-      cursor:pointer;
-    }
-
-    #cipher{
-      font-size:clamp(30px, 5.2vw, 58px);
-      letter-spacing:0.14em;
-      font-weight:700;
-      margin:10px 0 0;
-    }
-
-    #clue{
-      color: var(--ink2);
-      font-style: italic;
-      font-size: 18px;
-      margin: 6px 0 0;
-      min-height: 26px;
-    }
-
-    #ref{
-      font-style:italic;
-      color:#7a7367;
-      font-size:18px;
-      margin:6px 0 18px;
-      min-height: 22px;
-    }
-
-    .answerWrap{
-      width:min(680px, 100%);
-      margin:0 auto;
-    }
-
-    input{
-      width:100%;
-      font-size:clamp(22px, 2.8vw, 32px);
-      padding:10px 10px 14px;
-      border:none;
-      border-bottom:3px solid var(--rule);
-      background:transparent;
-      text-align:center;
-      outline:none;
-      font-family: Georgia, "Times New Roman", serif;
-      font-weight:600;
-    }
-
-    #feedback{
-      min-height:30px;
-      margin-top:10px;
-      font-style:italic;
-      color:var(--ink2);
-      opacity:0;
-      filter: blur(2px);
-      transform: translateY(6px);
-      transition: opacity 1200ms ease, filter 1200ms ease, transform 1200ms ease;
-    }
-    #feedback.show{ opacity:1; filter: blur(0); transform: translateY(0); }
-    #feedback.ok{ color: var(--ok); }
-    #feedback.warn{ color: var(--warn); }
-    #feedback.bad{ color: var(--bad); }
-
-    .controls{
-      margin-top:18px;
-      display:flex;
-      gap:12px;
-      justify-content:center;
-      flex-wrap:wrap;
-    }
-
-    button{
-      padding:10px 16px;
-      font-size:18px;
-      background:var(--btn);
-      border:1px solid var(--rule);
-      cursor:pointer;
-      font-family: Georgia, "Times New Roman", serif;
-      user-select:none;
-    }
-    button.active{
-      background:var(--btn2);
-      outline:2px solid rgba(185,176,156,.65);
-    }
-
-    .meta{
-      margin-top: 14px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:center;
-      color: var(--ink2);
-      font-size: 16px;
-    }
-    .pill{
-      border:1px solid rgba(185,176,156,.8);
-      padding:6px 10px;
-      background: rgba(255,255,255,.45);
-    }
-
-    .footer{
-      margin-top:26px;
-      font-style:italic;
-      color:#7a7367;
-      font-size:18px;
-    }
-    .version{
-      margin-top:10px;
-      font-size:13px;
-      color: rgba(122,115,103,.7);
-    }
-
-    @media (max-width:520px){
-      #game{ padding:44px 18px 34px; }
-      button{ width:100%; }
-      select{ width:100%; }
-    }
-  </style>
+<style>
+:root{
+  --paper:#fbf6ec; --ink:#2b2b2b; --ink2:#6b6458;
+  --rule:#b9b09c; --btn:#efe6d3; --btn2:#d6ccb7;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; display:flex; justify-content:center; align-items:center;
+  background:#f4efe6; font-family:Georgia,serif; color:var(--ink);
+}
+#game{
+  width:min(900px,100%); padding:50px; border:1px solid var(--rule);
+  background:var(--paper); text-align:center;
+}
+h1{letter-spacing:.35em; margin:0}
+.subtitle{font-style:italic; color:var(--ink2); margin-bottom:20px}
+#cipher{
+  font-size:48px; letter-spacing:.15em; font-weight:700; margin:20px 0;
+}
+#clue{font-style:italic; color:var(--ink2); min-height:24px}
+input{
+  width:100%; font-size:26px; text-align:center;
+  border:none; border-bottom:3px solid var(--rule);
+  background:transparent; outline:none; margin-top:20px;
+}
+.controls{margin-top:24px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+button{
+  padding:10px 16px; font-size:18px;
+  background:var(--btn); border:1px solid var(--rule); cursor:pointer;
+}
+button.active{background:var(--btn2)}
+#feedback{
+  margin-top:14px; min-height:24px; font-style:italic; color:var(--ink2)
+}
+.footer{margin-top:26px; font-style:italic; color:var(--ink2)}
+.version{margin-top:8px; font-size:13px; opacity:.6}
+select{font-size:16px; padding:6px}
+</style>
 </head>
 
 <body>
-  <div id="game">
-    <div class="stack">
-      <h1>TRTRSLF</h1>
-      <div class="subtitle">Translate the Self</div>
+<div id="game">
+  <h1>TRTRSLF</h1>
+  <div class="subtitle">Translate the Self</div>
 
-      <div class="toprow">
-        <select id="category">
-          <option value="biblical">Biblical</option>
-          <option value="movies">Movie-ish</option>
-          <option value="pop">Pop Culture-ish</option>
-          <option value="ads">Ad Slogans-ish</option>
-          <option value="tech80s">Tech Terms (1980s-ish)</option>
-          <option value="songs">Song-ish (no lyrics)</option>
-        </select>
-        <button id="newBtn">New Puzzle</button>
-      </div>
+  <select id="category">
+    <option value="all">All categories</option>
+    <option value="biblical">Biblical</option>
+    <option value="movies">Movies</option>
+    <option value="pop">Pop Culture</option>
+    <option value="songs">Songs</option>
+  </select>
 
-      <div id="cipher">—</div>
-      <div id="clue"></div>
-      <div id="ref"></div>
+  <div id="cipher">—</div>
+  <div id="clue"></div>
 
-      <div class="answerWrap">
-        <input id="answer" placeholder="Type your translation…" autocomplete="off" />
-        <div id="feedback"></div>
-      </div>
+  <input id="answer" placeholder="Type your translation…" autocomplete="off"/>
 
-      <div class="controls">
-        <button id="submitBtn">Submit</button>
-        <button id="spacesBtn">HINT — Show Spaces</button>
-        <button id="vowelsBtn">HINT — Show Vowels</button>
-        <button id="revealBtn">Reveal</button>
-      </div>
+  <div id="feedback"></div>
 
-      <div class="meta">
-        <div class="pill">Score: <span id="score">0</span></div>
-        <div class="pill">Streak: <span id="streak">0</span></div>
-      </div>
-
-      <div class="footer">A small game about consonants, context, and interpretation.</div>
-      <div class="version">v2.01</div>
-    </div>
+  <div class="controls">
+    <button id="submit">Submit</button>
+    <button id="spaces">HINT — Show Spaces</button>
+    <button id="vowels">HINT — Show Vowels</button>
+    <button id="reveal">Reveal</button>
+    <button id="next">Next</button>
   </div>
 
+  <div class="footer">A small game about consonants, context, and interpretation.</div>
+  <div class="version">v2.02</div>
+</div>
+
 <script>
-  // ===== State =====
-  let currentPuzzle = null;
-  let showSpaces = false;
-  let showVowels = false;
-  let score = 0;
-  let streak = 0;
+let puzzle = null;
+let revealed = false;
 
-  const elCipher = document.getElementById("cipher");
-  const elRef = document.getElementById("ref");
-  const elClue = document.getElementById("clue");
-  const elAnswer = document.getElementById("answer");
-  const elFeedback = document.getElementById("feedback");
-  const elScore = document.getElementById("score");
-  const elStreak = document.getElementById("streak");
+const cipherEl = document.getElementById("cipher");
+const clueEl = document.getElementById("clue");
+const feedbackEl = document.getElementById("feedback");
+const answerEl = document.getElementById("answer");
 
-  const btnSpaces = document.getElementById("spacesBtn");
-  const btnVowels = document.getElementById("vowelsBtn");
+function loadPuzzle(){
+  fetch("https://trtrslf-api.vercel.app/api/puzzle")
+    .then(r=>r.json())
+    .then(data=>{
+      puzzle = data;
+      revealed = false;
+      cipherEl.textContent = data.noVowels;
+      clueEl.textContent = data.meta?.clue || "";
+      feedbackEl.textContent = "";
+      answerEl.value = "";
+    })
+    .catch(()=>{
+      cipherEl.textContent = "Error loading puzzle";
+    });
+}
 
-  function fadeFeedback(text, kind){
-    elFeedback.className = "";
-    elFeedback.textContent = text;
-    if (kind) elFeedback.classList.add(kind);
-
-    // restart animation
-    void elFeedback.offsetWidth;
-    elFeedback.classList.add("show");
-
-    clearTimeout(fadeFeedback._t);
-    fadeFeedback._t = setTimeout(() => elFeedback.classList.remove("show"), 2400);
+document.getElementById("submit").onclick = ()=>{
+  if(!puzzle) return;
+  const guess = answerEl.value.trim().toUpperCase();
+  if(guess === puzzle.phrase){
+    feedbackEl.textContent = puzzle.meta?.learn || "Correct.";
+  } else {
+    feedbackEl.textContent = puzzle.meta?.nudge || "Try again.";
   }
+};
 
-  function render(){
-    if (!currentPuzzle) return;
+document.getElementById("spaces").onclick = ()=>{
+  if(puzzle) cipherEl.textContent = puzzle.noSpaces;
+};
 
-    const phrase = currentPuzzle.phrase;        // ALL CAPS with spaces
-    const noVowels = currentPuzzle.noVowels;    // ALL CAPS with WORD spaces
-    const noSpaces = currentPuzzle.noSpaces;    // ALL CAPS no spaces
+document.getElementById("vowels").onclick = ()=>{
+  if(puzzle) cipherEl.textContent = puzzle.phrase.replace(/[^AEIOU ]/gi,"_");
+};
 
-    // RULES (your final rules):
-    // default: no vowels + no spaces
-    // spaces hint: no vowels + word spaces
-    // vowels hint: full phrase, no spaces, ALL CAPS
-    // both: full phrase with spaces, ALL CAPS (NOT sentence case)
-    if (showSpaces && showVowels) elCipher.textContent = phrase;
-    else if (showSpaces)          elCipher.textContent = noVowels;
-    else if (showVowels)          elCipher.textContent = noSpaces;
-    else                          elCipher.textContent = noVowels.replace(/\s/g, "");
-
-    btnSpaces.classList.toggle("active", showSpaces);
-    btnVowels.classList.toggle("active", showVowels);
-
-    elRef.textContent = currentPuzzle.meta?.source ? currentPuzzle.meta.source : "";
-    elClue.textContent = currentPuzzle.meta?.clue ? currentPuzzle.meta.clue : "";
+document.getElementById("reveal").onclick = ()=>{
+  if(puzzle){
+    cipherEl.textContent = puzzle.phrase;
+    feedbackEl.textContent = puzzle.meta?.learn || "";
   }
+};
 
-  async function loadPuzzle(){
-    elCipher.textContent = "…";
-    elRef.textContent = "";
-    elClue.textContent = "";
-    elAnswer.value = "";
-    showSpaces = false;
-    showVowels = false;
-    btnSpaces.classList.remove("active");
-    btnVowels.classList.remove("active");
+document.getElementById("next").onclick = loadPuzzle;
 
-    const category = document.getElementById("category").value;
-
-    try{
-      const r = await fetch(`/api/puzzle?category=${encodeURIComponent(category)}`);
-      if(!r.ok) throw new Error("bad response");
-      currentPuzzle = await r.json();
-
-      if (!currentPuzzle || !currentPuzzle.noVowels) throw new Error("missing fields");
-
-      render();
-    }catch(e){
-      elCipher.textContent = "Error loading puzzle";
-      fadeFeedback("Couldn’t load puzzle. Try New Puzzle.", "bad");
-    }
-  }
-
-  function norm(s){
-    return (s||"").toUpperCase().replace(/[^A-Z\s]/g,"").replace(/\s+/g," ").trim();
-  }
-
-  function similarityPct(a,b){
-    const A = norm(a), B = norm(b);
-    if(!A && !B) return 100;
-    if(!A || !B) return 0;
-    const maxLen = Math.max(A.length,B.length);
-    const minLen = Math.min(A.length,B.length);
-    let match=0;
-    for(let i=0;i<minLen;i++) if(A[i]===B[i]) match++;
-    return Math.round((match/maxLen)*100);
-  }
-
-  async function submit(){
-    if(!currentPuzzle) return;
-
-    const guess = elAnswer.value || "";
-    const target = currentPuzzle.phrase || "";
-
-    const pct = similarityPct(guess, target);
-
-    // quick scoring (simple)
-    if(pct >= 92){ score += 10; streak += 1; fadeFeedback(`✓ Well done (${pct}%). ${currentPuzzle.meta?.learn || ""}`, "ok"); }
-    else if(pct >= 70){ score += 4; streak = 0; fadeFeedback(`△ Close (${pct}%). ${currentPuzzle.meta?.nudge || "Try refining."}`, "warn"); }
-    else { streak = 0; fadeFeedback(`✕ Not quite (${pct}%). ${currentPuzzle.meta?.hint2 || "Use a hint if you want."}`, "bad"); }
-
-    elScore.textContent = String(score);
-    elStreak.textContent = String(streak);
-  }
-
-  // ===== Wire up buttons =====
-  document.getElementById("newBtn").onclick = loadPuzzle;
-
-  document.getElementById("submitBtn").onclick = submit;
-
-  elAnswer.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") submit();
-  });
-
-  document.getElementById("spacesBtn").onclick = () => { showSpaces = !showSpaces; render(); };
-  document.getElementById("vowelsBtn").onclick = () => { showVowels = !showVowels; render(); };
-
-  document.getElementById("revealBtn").onclick = () => {
-    if(!currentPuzzle) return;
-    showSpaces = true;
-    showVowels = true;
-    render();
-    fadeFeedback(`Answer: ${currentPuzzle.phrase}`, "warn");
-  };
-
-  // initial load
-  loadPuzzle();
+loadPuzzle();
 </script>
 </body>
 </html>
