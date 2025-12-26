@@ -6,42 +6,85 @@
 <title>TRTRSLF</title>
 
 <style>
-:root{
-  --paper:#fbf6ec; --ink:#2b2b2b; --ink2:#6b6458;
-  --rule:#b9b09c; --btn:#efe6d3; --btn2:#d6ccb7;
-}
-*{box-sizing:border-box}
 body{
-  margin:0; min-height:100vh; display:flex; justify-content:center; align-items:center;
-  background:#f4efe6; font-family:Georgia,serif; color:var(--ink);
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f6f0e6;
+  font-family:Georgia,"Times New Roman",serif;
+  color:#2b2b2b;
 }
 #game{
-  width:min(900px,100%); padding:50px; border:1px solid var(--rule);
-  background:var(--paper); text-align:center;
+  width:min(860px,96%);
+  padding:48px 40px;
+  background:#fbf6ec;
+  border:1px solid #d8cdb8;
+  text-align:center;
 }
-h1{letter-spacing:.35em; margin:0}
-.subtitle{font-style:italic; color:var(--ink2); margin-bottom:20px}
+h1{
+  letter-spacing:.35em;
+  margin:0;
+}
+.subtitle{
+  font-style:italic;
+  color:#6b6458;
+  margin-bottom:16px;
+}
+select,button,input{
+  font-family:inherit;
+  font-size:18px;
+}
 #cipher{
-  font-size:48px; letter-spacing:.15em; font-weight:700; margin:20px 0;
+  font-size:48px;
+  letter-spacing:.14em;
+  margin:24px 0 8px;
+  min-height:60px;
 }
-#clue{font-style:italic; color:var(--ink2); min-height:24px}
+#clue{
+  font-style:italic;
+  color:#6b6458;
+  min-height:24px;
+}
 input{
-  width:100%; font-size:26px; text-align:center;
-  border:none; border-bottom:3px solid var(--rule);
-  background:transparent; outline:none; margin-top:20px;
+  width:100%;
+  max-width:620px;
+  border:none;
+  border-bottom:3px solid #b9b09c;
+  background:transparent;
+  font-size:28px;
+  text-align:center;
+  margin:20px auto;
+  outline:none;
 }
-.controls{margin-top:24px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+.controls{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
 button{
-  padding:10px 16px; font-size:18px;
-  background:var(--btn); border:1px solid var(--rule); cursor:pointer;
+  padding:10px 16px;
+  background:#efe6d3;
+  border:1px solid #b9b09c;
+  cursor:pointer;
 }
-button.active{background:var(--btn2)}
 #feedback{
-  margin-top:14px; min-height:24px; font-style:italic; color:var(--ink2)
+  min-height:28px;
+  margin-top:12px;
+  font-style:italic;
 }
-.footer{margin-top:26px; font-style:italic; color:var(--ink2)}
-.version{margin-top:8px; font-size:13px; opacity:.6}
-select{font-size:16px; padding:6px}
+.footer{
+  margin-top:24px;
+  font-style:italic;
+  color:#7a7367;
+}
+.version{
+  font-size:13px;
+  color:#9a9387;
+  margin-top:8px;
+}
 </style>
 </head>
 
@@ -51,11 +94,10 @@ select{font-size:16px; padding:6px}
   <div class="subtitle">Translate the Self</div>
 
   <select id="category">
-    <option value="all">All categories</option>
+    <option value="">All categories</option>
     <option value="biblical">Biblical</option>
     <option value="movies">Movies</option>
-    <option value="pop">Pop Culture</option>
-    <option value="songs">Songs</option>
+    <option value="pop">Pop culture</option>
   </select>
 
   <div id="cipher">—</div>
@@ -63,90 +105,70 @@ select{font-size:16px; padding:6px}
 
   <input id="answer" placeholder="Type your translation…" autocomplete="off"/>
 
-  <div id="feedback"></div>
-
   <div class="controls">
-    <button id="submit">Submit</button>
-    <button id="spaces">HINT — Show Spaces</button>
-    <button id="vowels">HINT — Show Vowels</button>
-    <button id="reveal">Reveal</button>
-    <button id="next">Next</button>
+    <button id="submitBtn">Submit</button>
+    <button id="vowelsBtn">Show vowels</button>
+    <button id="revealBtn">Reveal</button>
+    <button id="nextBtn">Next</button>
   </div>
 
-  <div class="footer">A small game about consonants, context, and interpretation.</div>
+  <div id="feedback"></div>
+
+  <div class="footer">
+    A small game about consonants, context, and interpretation.
+  </div>
   <div class="version">v2.02</div>
 </div>
 
-
-
-
-
-
 <script>
 let currentPuzzle = null;
-let revealed = false;
 
-function loadPuzzle() {
-  fetch("https://trtrslf-api.vercel.app/api/puzzle")
-    .then(r => {
-      if (!r.ok) throw new Error("Bad response");
-      return r.json();
-    })
+function loadPuzzle(){
+  const cat = document.getElementById("category").value;
+  const url = cat
+    ? `https://trtrslf-api.vercel.app/api/puzzle?category=${cat}`
+    : `https://trtrslf-api.vercel.app/api/puzzle`;
+
+  fetch(url)
+    .then(r => r.json())
     .then(data => {
+      console.log("PUZZLE:", data);
       currentPuzzle = data;
-      revealed = false;
 
-      cipher.textContent = data.noVowels;
-      clue.textContent = data.meta?.clue || "";
-      ref.textContent = data.meta?.source || "";
-      feedback.textContent = "";
-      feedback.className = "";
-      answer.value = "";
+      document.getElementById("cipher").textContent = data.noVowels;
+      document.getElementById("clue").textContent = data.meta?.clue || "";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("answer").value = "";
     })
     .catch(err => {
-      cipher.textContent = "Error loading puzzle";
       console.error(err);
+      document.getElementById("cipher").textContent = "Error loading puzzle";
     });
 }
 
-submitBtn.onclick = () => {
-  if (!currentPuzzle) return;
-
-  const guess = answer.value.trim().toUpperCase();
-  if (guess === currentPuzzle.phrase) {
-    feedback.textContent = currentPuzzle.meta?.learn || "Correct.";
-    feedback.className = "show ok";
-  } else {
-    feedback.textContent = currentPuzzle.meta?.nudge || "Try again.";
-    feedback.className = "show warn";
-  }
+document.getElementById("submitBtn").onclick = () => {
+  if(!currentPuzzle) return;
+  const guess = document.getElementById("answer").value.trim().toUpperCase();
+  document.getElementById("feedback").textContent =
+    guess === currentPuzzle.phrase
+      ? currentPuzzle.meta?.learn || "Correct."
+      : currentPuzzle.meta?.nudge || "Try again.";
 };
 
-spacesBtn.onclick = () => {
-  if (!currentPuzzle) return;
-  cipher.textContent = currentPuzzle.noSpaces.replace(/([A-Z])/g, "$1 ");
+document.getElementById("vowelsBtn").onclick = () => {
+  if(currentPuzzle)
+    document.getElementById("cipher").textContent = currentPuzzle.phrase;
 };
 
-vowelsBtn.onclick = () => {
-  if (!currentPuzzle) return;
-  cipher.textContent = currentPuzzle.phrase;
+document.getElementById("revealBtn").onclick = () => {
+  if(currentPuzzle)
+    document.getElementById("cipher").textContent = currentPuzzle.phrase;
 };
 
-revealBtn.onclick = () => {
-  if (!currentPuzzle) return;
-  cipher.textContent = currentPuzzle.phrase;
-};
-
-newBtn.onclick = loadPuzzle;
-nextBtn?.onclick = loadPuzzle;
+document.getElementById("nextBtn").onclick = loadPuzzle;
+document.getElementById("category").onchange = loadPuzzle;
 
 loadPuzzle();
 </script>
-
-
-
-
-
-  
 </body>
 </html>
