@@ -1,174 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
+
+<!-- =====================================================
+     HEAD
+     Page metadata + all styling
+===================================================== -->
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TRTRSLF</title>
 
 <style>
+/* =====================================================
+   GLOBAL PAGE STYLES
+===================================================== */
 body{
   margin:0;
   min-height:100vh;
   display:flex;
-  justify-content:center;
   align-items:center;
-  background:#f6f0e6;
-  font-family:Georgia,"Times New Roman",serif;
+  justify-content:center;
+  background:#f4efe6;
+  font-family:Georgia, "Times New Roman", serif;
   color:#2b2b2b;
 }
+
+/* =====================================================
+   GAME CONTAINER
+===================================================== */
 #game{
-  width:min(860px,96%);
-  padding:48px 40px;
-  background:#fbf6ec;
+  width:800px;
+  max-width:95%;
+  background:#fffaf0;
+  padding:48px 40px 36px;
   border:1px solid #d8cdb8;
+  box-shadow:0 18px 40px rgba(0,0,0,.15);
   text-align:center;
 }
+
+/* =====================================================
+   TITLE + SUBTITLE
+===================================================== */
 h1{
-  letter-spacing:.35em;
+  letter-spacing:.3em;
   margin:0;
 }
+
 .subtitle{
   font-style:italic;
   color:#6b6458;
-  margin-bottom:16px;
+  margin-bottom:24px;
 }
-select,button,input{
-  font-family:inherit;
-  font-size:18px;
-}
+
+/* =====================================================
+   PUZZLE DISPLAY
+===================================================== */
 #cipher{
   font-size:48px;
   letter-spacing:.14em;
-  margin:24px 0 8px;
-  min-height:60px;
+  margin:20px 0 8px;
+  font-weight:700;
 }
+
 #clue{
   font-style:italic;
   color:#6b6458;
-  min-height:24px;
+  margin-bottom:14px;
 }
+
+/* =====================================================
+   ANSWER INPUT
+===================================================== */
 input{
   width:100%;
-  max-width:620px;
+  font-size:28px;
+  padding:10px;
   border:none;
   border-bottom:3px solid #b9b09c;
   background:transparent;
-  font-size:28px;
   text-align:center;
-  margin:20px auto;
   outline:none;
 }
+
+/* =====================================================
+   BUTTON CONTROLS
+===================================================== */
 .controls{
+  margin-top:20px;
   display:flex;
   gap:10px;
   justify-content:center;
   flex-wrap:wrap;
 }
+
 button{
   padding:10px 16px;
+  font-size:18px;
   background:#efe6d3;
   border:1px solid #b9b09c;
   cursor:pointer;
 }
+
+/* =====================================================
+   FEEDBACK TEXT
+===================================================== */
 #feedback{
-  min-height:28px;
-  margin-top:12px;
+  margin-top:14px;
+  min-height:24px;
   font-style:italic;
+  color:#2f5f3a;
 }
+
+/* =====================================================
+   FOOTER / VERSION
+===================================================== */
 .footer{
-  margin-top:24px;
-  font-style:italic;
+  margin-top:30px;
+  font-size:14px;
   color:#7a7367;
-}
-.version{
-  font-size:13px;
-  color:#9a9387;
-  margin-top:8px;
 }
 </style>
 </head>
 
 <body>
+
+<!-- =====================================================
+     GAME UI MARKUP
+===================================================== -->
 <div id="game">
+
+  <!-- ---------- TITLE ---------- -->
   <h1>TRTRSLF</h1>
   <div class="subtitle">Translate the Self</div>
 
-  <select id="category">
-    <option value="">All categories</option>
-    <option value="biblical">Biblical</option>
-    <option value="movies">Movies</option>
-    <option value="pop">Pop culture</option>
-  </select>
-
+  <!-- ---------- PUZZLE TEXT ---------- -->
   <div id="cipher">—</div>
   <div id="clue"></div>
 
-  <input id="answer" placeholder="Type your translation…" autocomplete="off"/>
+  <!-- ---------- USER INPUT ---------- -->
+  <input id="answer" placeholder="Type your translation…" autocomplete="off">
 
+  <!-- ---------- BUTTONS ---------- -->
   <div class="controls">
     <button id="submitBtn">Submit</button>
-    <button id="vowelsBtn">Show vowels</button>
+    <button id="vowelsBtn">Show Vowels</button>
     <button id="revealBtn">Reveal</button>
     <button id="nextBtn">Next</button>
   </div>
 
+  <!-- ---------- FEEDBACK ---------- -->
   <div id="feedback"></div>
 
-  <div class="footer">
-    A small game about consonants, context, and interpretation.
-  </div>
-  <div class="version">v2.02</div>
+  <!-- ---------- FOOTER ---------- -->
+  <div class="footer">v2.10 — Stable Interface Lock</div>
+
 </div>
 
+<!-- =====================================================
+     SCRIPT
+     (All logic lives here — do not move casually)
+===================================================== -->
 <script>
-let currentPuzzle = null;
 
+/* =====================================================
+   STATE
+===================================================== */
+let puzzle = null;
+
+/* =====================================================
+   LOAD PUZZLE FROM API
+===================================================== */
 function loadPuzzle(){
-  const cat = document.getElementById("category").value;
-  const url = cat
-    ? `https://trtrslf-api.vercel.app/api/puzzle?category=${cat}`
-    : `https://trtrslf-api.vercel.app/api/puzzle`;
-
-  fetch(url)
+  fetch("https://trtrslf-api.vercel.app/api/puzzle")
     .then(r => r.json())
     .then(data => {
-      console.log("PUZZLE:", data);
-      currentPuzzle = data;
-
+      puzzle = data;
       document.getElementById("cipher").textContent = data.noVowels;
       document.getElementById("clue").textContent = data.meta?.clue || "";
-      document.getElementById("feedback").textContent = "";
       document.getElementById("answer").value = "";
+      document.getElementById("feedback").textContent = "";
     })
-    .catch(err => {
-      console.error(err);
-      document.getElementById("cipher").textContent = "Error loading puzzle";
+    .catch(() => {
+      document.getElementById("cipher").textContent = "—";
+      document.getElementById("feedback").textContent = "Puzzle failed to load.";
     });
 }
 
+/* =====================================================
+   SUBMIT ANSWER
+===================================================== */
 document.getElementById("submitBtn").onclick = () => {
-  if(!currentPuzzle) return;
+  if(!puzzle) return;
   const guess = document.getElementById("answer").value.trim().toUpperCase();
   document.getElementById("feedback").textContent =
-    guess === currentPuzzle.phrase
-      ? currentPuzzle.meta?.learn || "Correct."
-      : currentPuzzle.meta?.nudge || "Try again.";
+    guess === puzzle.phrase
+      ? puzzle.meta?.learn || "Correct."
+      : puzzle.meta?.nudge || "Try again.";
 };
 
+/* =====================================================
+   HINT / REVEAL CONTROLS
+===================================================== */
 document.getElementById("vowelsBtn").onclick = () => {
-  if(currentPuzzle)
-    document.getElementById("cipher").textContent = currentPuzzle.phrase;
+  if(puzzle) document.getElementById("cipher").textContent = puzzle.phrase;
 };
 
 document.getElementById("revealBtn").onclick = () => {
-  if(currentPuzzle)
-    document.getElementById("cipher").textContent = currentPuzzle.phrase;
+  if(puzzle) document.getElementById("cipher").textContent = puzzle.phrase;
 };
 
+/* =====================================================
+   NEXT PUZZLE
+===================================================== */
 document.getElementById("nextBtn").onclick = loadPuzzle;
-document.getElementById("category").onchange = loadPuzzle;
 
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
 loadPuzzle();
+
 </script>
+
 </body>
 </html>
